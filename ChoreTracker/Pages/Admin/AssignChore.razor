@@ -56,15 +56,10 @@ else
     </ul>
     <br />
     <h5>Assign to:</h5>
-    <ul>
-        @foreach (User user in users)
-        {
-            <li>
-                <h6>@user.Name</h6>
-                <button
-            </li>
-        }
-    </ul>
+    @foreach (User user in users)
+    {
+        <button @onclick="() => AssignChoreToUser(user)" class="btn btn-primary">Assign @user.Name</button>
+    }
 }
 @code {
     [Parameter]
@@ -79,14 +74,13 @@ else
         chore = await _choreDb.GetChore(choreId);
     }
 
-    private async Task AssignChoreToUser()
+    private async Task AssignChoreToUser(User selectedUser)
     {
-        var selectedUser = users.Where(x => x.Id == selectedUserId); // Change to userId!!!
         AssignedChore assignedChore = new AssignedChore
         {
             ChoreId = chore.Id,
-            //UserId = selectedUser.Id,
-            //UserName = selectedUser.Name
+            UserId = selectedUser.Id,
+            UserName = selectedUser.Name
         };
 
         await _userDb.AssignChoreToUser(assignedChore);
