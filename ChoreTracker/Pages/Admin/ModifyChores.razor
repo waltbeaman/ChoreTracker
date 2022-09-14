@@ -1,0 +1,120 @@
+﻿@page "/admin/modifychores"
+
+@using Models
+@using Data
+@inject IChoreData _choreDb
+@inject IUserData _userDb
+@inject NavigationManager NavManager
+
+@attribute [Authorize(Roles = "Admin")]
+
+<h3>Modify Chores</h3>
+
+<br />
+
+<hr />
+
+<br />
+
+<h4>Current Chores</h4>
+
+@if (chores == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Chore</th>
+                <th>Days of Week</th>
+                <th>Assigned To</th>
+                <th>Value</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var chore in chores)
+            {
+                <tr>
+                    <td>@chore.ChoreName</td>
+                    <td>
+                        <ul>
+                            @if (chore.Monday == true)
+                            {
+                                <li>Monday</li>
+                            }
+                            @if (chore.Tuesday == true)
+                            {
+                                <li>Tuesday</li>
+                            }
+                            @if (chore.Wednesday == true)
+                            {
+                                <li>Wednesday</li>
+                            }
+                            @if (chore.Thursday == true)
+                            {
+                                <li>Thursday</li>
+                            }
+                            @if (chore.Friday == true)
+                            {
+                                <li>Friday</li>
+                            }
+                            @if (chore.Saturday == true)
+                            {
+                                <li>Saturday</li>
+                            }
+                            @if (chore.Sunday == true)
+                            {
+                                <li>Sunday</li>
+                            }
+                        </ul>
+
+                    </td>
+                    <td>
+                        <ul>
+                            @foreach (User user in chore.Users)
+                            {
+                                <li>@user.Name</li>
+                            }
+                        </ul>
+
+                    </td>
+                    <td>@chore.Value</td>
+                    <td>
+                        <button @onclick="() => RemoveChore(chore.ChoreId)" class="btn btn-danger">Delete</button>
+                        <button @onclick="() => ModifyChore(chore.ChoreId)" class="btn btn-primary">Edit</button>
+                        <button @onclick="() => AssignChoreToUser(chore.ChoreId)" class="btn btn-primary">Assign</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<ModifyChoreView>? chores;
+
+    
+    protected override async Task OnInitializedAsync()
+    {
+        chores = await _choreDb.GetChoresToModify();
+    }
+    private void AssignChoreToUser(int choreId)
+    {
+        NavManager.NavigateTo($"/admin/assignchore/{choreId}");
+    }
+
+    private void ModifyChore(int choreId)
+    {
+        NavManager.NavigateTo($"/admin/modifychore/{choreId}");
+    }
+
+    private async Task RemoveChore(int choreId)
+    {
+        await _choreDb.RemoveChore(choreId);
+
+        await OnInitializedAsync();
+    }
+}

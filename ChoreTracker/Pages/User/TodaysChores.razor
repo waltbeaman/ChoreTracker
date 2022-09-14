@@ -1,0 +1,105 @@
+﻿@page "/user/todayschores"
+
+@using Data
+@using Models
+@using Microsoft.AspNetCore.Http
+
+@inject IHttpContextAccessor httpContextAccessor
+@inject IChoreData _choreDb
+
+@attribute [Authorize(Roles = "User")]
+<h3>Current Chores for @CurrentUserName</h3>
+
+@if (todaysChores == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Chore</th>
+                <th>Complete?</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var chore in todaysChores)
+            {
+                <tr>
+                    <td>@chore.ChoreName</td>
+                    <td>
+                        @if (chore.IsComplete)
+                        {
+                            <button disabled type="submit" @onclick="() => MarkChoreComplete(chore.ChoreId)" class="btn btn-outline-primary">Yes</button>
+                            <button type="submit" @onclick="() => MarkChoreInComplete(chore.ChoreId)" class="btn btn-danger">No</button>
+                        }
+                        else
+                        {
+                            <button type="submit" @onclick="() => MarkChoreComplete(chore.ChoreId)" class="btn btn-primary">Yes</button>
+                            <button disabled type="submit" @onclick="() => MarkChoreInComplete(chore.ChoreId)" class="btn btn-outline-primary">No</button>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<br />
+<hr />
+<br />
+
+<h4>Done for the day?</h4>
+<button type="submit" @onclick="AddCompletedChores" class="btn btn-primary">Submit Completed Chores</button>
+
+@code {
+    private List<AssignedChore>? assignedChores;
+    private List<AssignedChoreView>? todaysChores;
+    public string? CurrentUserName;
+
+    protected override async Task OnInitializedAsync()
+    {
+        CurrentUserName = httpContextAccessor.HttpContext.User.Identity.Name;
+        assignedChores = await _choreDb.GetAssignedChores();
+        todaysChores = await _choreDb.GetTodaysChores(CurrentUserName.ToString());
+    }
+
+    private async Task MarkChoreComplete(int choreId)
+    {
+        await _choreDb.MarkChoreComplete(choreId);
+
+        await OnInitializedAsync();
+    }
+
+    private async Task MarkChoreInComplete(int choreId)
+    {
+        await _choreDb.MarkChoreIncomplete(choreId);
+
+        await OnInitializedAsync();
+    }
+
+    private async Task AddCompletedChores()
+    {
+        List<CompletedChore> completedChores = new List<CompletedChore>();
+
+        if (assignedChores != null)
+        {
+            foreach (AssignedChore chore in assignedChores)
+            {
+                CompletedChore completedChore = new CompletedChore
+                {
+                    ChoreId = chore.Id,
+                    UserName = CurrentUserName,
+                    IsComplete = chore.IsComplete,
+                    DateComplete = DateTime.Today
+
+                };
+                completedChores.Add(completedChore);
+
+            }
+
+            await _choreDb.AddCompletedChores(completedChores);
+        }
+    }
+}

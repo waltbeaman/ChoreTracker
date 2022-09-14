@@ -1,0 +1,103 @@
+﻿@page "/admin/chorestats"
+
+@using Models
+@using Data
+@using Blazorise.Charts
+@inject IChoreData _choreDb
+@inject IUserData _userDb
+
+@inject NavigationManager NavManager
+
+@attribute [Authorize(Roles = "Admin")]
+
+
+<h3>Chore Stats</h3>
+
+<CompletedChoresChart Data="CompletedChoreData" Title="@("Completed Chores")" />
+<br />
+<br />
+<AllowanceChart Data="AllowanceData" Title="@("Allowance Earned")" />
+
+@if (completedChores == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Chore ID</th>
+                <th>User ID</th>
+                <th>Date Complete</th>
+                <th>Value</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var completedChore in completedChores)
+            {
+                <tr>
+                    <td>@completedChore.ChoreId</td>
+                    <td>@completedChore.UserName</td>
+                    <td>@completedChore.DateComplete</td>
+                    <td>@completedChore.Chore</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<CompletedChore>? completedChores;
+    Dictionary<string, IEnumerable<(string, int)>> CompletedChoreData;
+    Dictionary<string, IEnumerable<(string, decimal)>> AllowanceData;
+
+    protected override async Task OnInitializedAsync()
+    {
+        completedChores = await _choreDb.GetCompletedChores();
+
+    }
+
+    protected override void OnInitialized()
+    {
+        CompletedChoreData = new Dictionary<string, IEnumerable<(string, int)>>
+            {
+                ["July"] = new List<(string, int)>
+            {
+                ("test", 75),
+                ("test2", 91)
+            },
+                ["August"] = new List<(string, int)>
+            {
+                ("test", 82),
+                ("test2", 88)
+            },
+                ["September"] = new List<(string, int)>
+            {
+                ("test", 37),
+                ("test2", 29)
+            },
+            };
+
+        AllowanceData = new Dictionary<string, IEnumerable<(string, decimal)>>
+            {
+                ["July"] = new List<(string, decimal)>
+            {
+                ("test", 26.50M),
+                ("test2", 22.00M)
+            },
+                ["August"] = new List<(string, decimal)>
+            {
+                ("test", 27.00M),
+                ("test2", 20.30M)
+            },
+                ["September"] = new List<(string, decimal)>
+            {
+                ("test", 13.00M),
+                ("test2", 11.75M)
+            },
+            };
+
+    }
+
+}

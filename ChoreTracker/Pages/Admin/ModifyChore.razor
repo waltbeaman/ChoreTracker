@@ -1,0 +1,92 @@
+﻿@page "/admin/modifychore/{choreId:int?}"
+
+@using Models
+@using Data
+@inject IChoreData _choreDb
+@inject IUserData _userDb
+@inject NavigationManager NavManager
+
+@attribute [Authorize(Roles = "Admin")]
+
+@if (chore == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <h3>ModifyChore: <strong>@chore.Name</strong></h3>
+
+    <br />
+
+    <hr />
+
+    <br />
+
+    <EditForm Model="@chore" OnValidSubmit="@UpdateChore">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+        <label>Chore Title: </label>
+        <InputText id="Name" @bind-Value="chore.Name" />
+        <label>Chore Value: </label>
+        <InputNumber id="Value" min=".25" max="2" @bind-Value="chore.Value" />
+        <br />
+        <br />
+        <table cellpadding="5">
+            <thead>
+                <tr>
+                    <th align="center">Monday</th>
+                    <th align="center">Tuesday</th>
+                    <th align="center">Wednesday</th>
+                    <th align="center">Thursday</th>
+                    <th align="center">Friday</th>
+                    <th align="center">Saturday</th>
+                    <th align="center">Sunday</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td align="center"><InputCheckbox id="Monday" @bind-Value="chore.Monday" /></td>
+                    <td align="center"><InputCheckbox id="Tuesday" @bind-Value="chore.Tuesday" /></td>
+                    <td align="center"><InputCheckbox id="Wednesday" @bind-Value="chore.Wednesday" /></td>
+                    <td align="center"><InputCheckbox id="Thursday" @bind-Value="chore.Thursday" /></td>
+                    <td align="center"><InputCheckbox id="Friday" @bind-Value="chore.Friday" /></td>
+                    <td align="center"><InputCheckbox id="Saturday" @bind-Value="chore.Saturday" /></td>
+                    <td align="center"><InputCheckbox id="Sunday" @bind-Value="chore.Sunday" /></td>
+                </tr>
+            </tbody>
+        </table>
+        <br />
+        <button type="submit" class="btn btn-primary">Update Chore</button>
+    </EditForm>
+}
+@code {
+    [Parameter]
+    public int choreId { get; set; }
+    private Chore? chore;
+
+    protected override async Task OnInitializedAsync()
+    {
+        chore = await _choreDb.GetChore(choreId);
+    }
+
+    private async Task UpdateChore()
+    {
+        Chore updatedChore = new Chore
+            {
+                Id = chore.Id,
+                Name = chore.Name,
+                Value = chore.Value,
+                Monday = chore.Monday,
+                Tuesday = chore.Tuesday,
+                Wednesday = chore.Wednesday,
+                Thursday = chore.Thursday,
+                Friday = chore.Friday,
+                Saturday = chore.Saturday,
+                Sunday = chore.Sunday
+            };
+
+        await _choreDb.ModifyChore(updatedChore);
+
+        NavManager.NavigateTo("/admin/modifychores");
+    }
+}

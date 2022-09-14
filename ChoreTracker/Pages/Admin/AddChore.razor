@@ -1,0 +1,78 @@
+﻿@page "/admin/addchore"
+
+@using Data
+@using Models
+
+@inject IChoreData _choreDb
+@inject NavigationManager NavManager
+
+@attribute [Authorize(Roles = "Admin")]
+
+<h3>AddChore</h3>
+
+<EditForm Model="@newChore" OnValidSubmit="@InsertChore">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    <label>Chore Title: </label>
+    <InputText id="Name" @bind-Value="newChore.Name" />
+    <label>Chore Value: </label>
+    <InputNumber id="Value" min=".25" max="2" @bind-Value="newChore.Value" />
+    <br />
+    <br />
+    <table cellpadding="5">
+        <thead>
+            <tr>
+                <th align="center">Monday</th>
+                <th align="center">Tuesday</th>
+                <th align="center">Wednesday</th>
+                <th align="center">Thursday</th>
+                <th align="center">Friday</th>
+                <th align="center">Saturday</th>
+                <th align="center">Sunday</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td align="center"><InputCheckbox id="Monday" @bind-Value="newChore.Monday" /></td>
+                <td align="center"><InputCheckbox id="Tuesday" @bind-Value="newChore.Tuesday" /></td>
+                <td align="center"><InputCheckbox id="Wednesday" @bind-Value="newChore.Wednesday" /></td>
+                <td align="center"><InputCheckbox id="Thursday" @bind-Value="newChore.Thursday" /></td>
+                <td align="center"><InputCheckbox id="Friday" @bind-Value="newChore.Friday" /></td>
+                <td align="center"><InputCheckbox id="Saturday" @bind-Value="newChore.Saturday" /></td>
+                <td align="center"><InputCheckbox id="Sunday" @bind-Value="newChore.Sunday" /></td>
+            </tr>
+        </tbody>
+    </table>
+    <br />
+    <button type="submit" class="btn btn-primary">Add Chore</button>
+</EditForm>
+
+@code {
+    private List<Chore>? chores;
+    private Chore newChore = new Chore();
+
+    //protected override async Task OnInitializedAsync()
+    //{
+    //    chores = await _choreDb.GetChores();
+    //}
+
+    private async Task InsertChore()
+    {
+        Chore c = new Chore
+        {
+            Name = newChore.Name,
+            Value = newChore.Value,
+            Monday = newChore.Monday,
+            Tuesday = newChore.Tuesday,
+            Wednesday = newChore.Wednesday,
+            Thursday = newChore.Thursday,
+            Friday = newChore.Friday,
+            Saturday = newChore.Saturday,
+            Sunday = newChore.Sunday
+        };
+
+        await _choreDb.InsertChore(c);
+
+        NavManager.NavigateTo("/admin/modifychores");
+    }
+}

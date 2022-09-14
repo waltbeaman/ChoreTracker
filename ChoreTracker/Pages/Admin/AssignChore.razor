@@ -1,0 +1,96 @@
+﻿@page "/admin/assignchore/{choreId:int?}"
+
+@using Models
+@using Data
+@inject IChoreData _choreDb
+@inject IUserData _userDb
+@inject NavigationManager NavManager
+
+@attribute [Authorize(Roles = "Admin")]
+
+@if (chore == null || users == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <h3>Assign Chore: <strong>@chore.Name</strong></h3>
+
+    <br />
+    <hr />
+    <br />
+
+    <h5>Value: @chore.Value</h5>
+    <br />
+    <h5>Days to complete chore:</h5>
+    <br />
+    <ul>
+        @if (chore.Monday == true)
+        {
+            <li>Monday</li>
+        }
+        @if (chore.Tuesday == true)
+        {
+            <li>Tuesday</li>
+        }
+        @if (chore.Wednesday == true)
+        {
+            <li>Wednesday</li>
+        }
+        @if (chore.Thursday == true)
+        {
+            <li>Thursday</li>
+        }
+        @if (chore.Friday == true)
+        {
+            <li>Friday</li>
+        }
+        @if (chore.Saturday == true)
+        {
+            <li>Saturday</li>
+        }
+        @if (chore.Sunday == true)
+        {
+            <li>Sunday</li>
+        }
+    </ul>
+    <br />
+    <h5>Assign to:</h5>
+    <ul>
+        @foreach (User user in users)
+        {
+            <li>
+                <h6>@user.Name</h6>
+                <button
+            </li>
+        }
+    </ul>
+}
+@code {
+    [Parameter]
+    public int choreId { get; set; }
+    private int selectedUserId;
+    private Chore? chore;
+    private List<User>? users;
+
+    protected override async Task OnInitializedAsync()
+    {
+        users = await _userDb.GetUsers();
+        chore = await _choreDb.GetChore(choreId);
+    }
+
+    private async Task AssignChoreToUser()
+    {
+        var selectedUser = users.Where(x => x.Id == selectedUserId); // Change to userId!!!
+        AssignedChore assignedChore = new AssignedChore
+        {
+            ChoreId = chore.Id,
+            //UserId = selectedUser.Id,
+            //UserName = selectedUser.Name
+        };
+
+        await _userDb.AssignChoreToUser(assignedChore);
+
+        NavManager.NavigateTo("/admin/modifychores");
+    }
+}
