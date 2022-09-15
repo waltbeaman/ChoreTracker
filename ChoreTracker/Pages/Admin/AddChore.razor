@@ -8,15 +8,17 @@
 
 @attribute [Authorize(Roles = "Admin")]
 
-<h3>AddChore</h3>
-
+<h4>AddChore</h4>
+<hr />
+<br />
 <EditForm Model="@newChore" OnValidSubmit="@InsertChore">
     <DataAnnotationsValidator />
     <ValidationSummary />
     <label>Chore Title: </label>
-    <InputText id="Name" @bind-Value="newChore.Name" />
+    <InputText class="form-control me-sm-2" id="Name" @bind-Value="newChore.Name" />
+    <br />
     <label>Chore Value: </label>
-    <InputNumber id="Value" min=".25" max="2" @bind-Value="newChore.Value" />
+    <InputNumber class="form-control me-sm-2" id="Value" min=".1" max="5" @bind-Value="newChore.Value" />
     <br />
     <br />
     <table cellpadding="5">

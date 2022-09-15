@@ -49,12 +49,16 @@ else
 
 @code {
     private List<CompletedChore>? completedChores;
+    private List<User>? users;
     Dictionary<string, IEnumerable<(string, int)>> CompletedChoreData;
     Dictionary<string, IEnumerable<(string, decimal)>> AllowanceData;
+
+
 
     protected override async Task OnInitializedAsync()
     {
         completedChores = await _choreDb.GetCompletedChores();
+        users = await _userDb.GetUsers();
 
     }
 

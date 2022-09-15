@@ -8,15 +8,13 @@
 
 @attribute [Authorize(Roles = "Admin")]
 
-<h3>Modify Chores</h3>
+<h4>Modify Chores</h4>
 
 <br />
 
 <hr />
 
 <br />
-
-<h4>Current Chores</h4>
 
 @if (chores == null)
 {
@@ -84,7 +82,7 @@ else
                     <td>@chore.Value</td>
                     <td>
                         <button @onclick="() => RemoveChore(chore.ChoreId)" class="btn btn-danger">Delete</button>
-                        <button @onclick="() => ModifyChore(chore.ChoreId)" class="btn btn-primary">Edit</button>
+                        <button @onclick="() => ModifyChore(chore.ChoreId)" class="btn btn-warning">Modify</button>
                         <button @onclick="() => AssignChoreToUser(chore.ChoreId)" class="btn btn-primary">Assign</button>
                     </td>
                 </tr>
