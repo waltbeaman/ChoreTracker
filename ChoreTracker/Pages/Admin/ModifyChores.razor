@@ -89,12 +89,16 @@ else
             }
         </tbody>
     </table>
+    <br />
+    <hr />
+    <br />
+    <button @onclick="() => AddDummyCompletedChoreData()" class="btn btn-primary">Add Dummy Data</button>
 }
 
 @code {
     private List<ModifyChoreView>? chores;
 
-    
+
     protected override async Task OnInitializedAsync()
     {
         chores = await _choreDb.GetChoresToModify();
@@ -114,5 +118,11 @@ else
         await _choreDb.RemoveChore(choreId);
 
         await OnInitializedAsync();
+    }
+
+    // Adds 500 completed chores to the database
+    private async Task AddDummyCompletedChoreData()
+    {
+        await _choreDb.AddDummyCompletedChoreData();
     }
 }

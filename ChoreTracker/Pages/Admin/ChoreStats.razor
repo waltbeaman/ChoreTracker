@@ -11,97 +11,162 @@
 @attribute [Authorize(Roles = "Admin")]
 
 
-<h3>Chore Stats</h3>
-
-<CompletedChoresChart Data="CompletedChoreData" Title="@("Completed Chores")" />
-<br />
-<br />
-<AllowanceChart Data="AllowanceData" Title="@("Allowance Earned")" />
-
+<h2>Chore Stats</h2>
+<hr />
 @if (completedChores == null)
 {
     <p><em>Loading...</em></p>
 }
 else
 {
+    CompletedChoreData = ChoresByMonthAndUser();
+    AllowanceData = AllowanceByMonthAndUser();
+
+    <CompletedChoresChart Data="CompletedChoreData" Title="@("Completed Chores")" />
+    <br />
+    <AllowanceChart Data="AllowanceData" Title="@("Allowance Earned")" />
+    <br />
+    <hr />
+    <h3>Chore History by Month</h3>
+
+    <hr />
     <table class="table table-striped">
         <thead>
             <tr>
-                <th>Chore ID</th>
-                <th>User ID</th>
-                <th>Date Complete</th>
-                <th>Value</th>
+                <th></th>
+                <th>User</th>
+                <th>Month</th>
+                <th># Chores Complete</th>
+                <th>Money Earned</th>
             </tr>
         </thead>
         <tbody>
-            @foreach (var completedChore in completedChores)
-            {
-                <tr>
-                    <td>@completedChore.ChoreId</td>
-                    <td>@completedChore.UserName</td>
-                    <td>@completedChore.DateComplete</td>
-                    <td>@completedChore.Chore</td>
-                </tr>
+            @{
+                int i = 1;
+                @foreach (var completedChore in completedChores)
+                {
+                    <tr>
+                        <td>@i</td>
+                        <td>@completedChore.UserName</td>
+                        <td>@GetMonthName(completedChore.Month)</td>
+                        <td>@completedChore.ChoreCount</td>
+                        <td>@completedChore.MoneyEarned</td>
+                    </tr>
+                    i++;
+                }
             }
         </tbody>
     </table>
 }
 
 @code {
-    private List<CompletedChore>? completedChores;
+    private List<MonthlyCompletedChoreView>? completedChores;
     private List<User>? users;
-    Dictionary<string, IEnumerable<(string, int)>> CompletedChoreData;
-    Dictionary<string, IEnumerable<(string, decimal)>> AllowanceData;
+    private List<CompletedChoreCount>? completedChoreCounts;
+    public Dictionary<string, List<CompletedChoreCount>> CompletedChoreData;
+    public Dictionary<string, List<AllowanceEarned>> AllowanceData;
 
-
+    // Use for testing chart display
+    //public Dictionary<string, IEnumerable<(string, int)>> CompletedChoreTestData;
+    public Dictionary<string, IEnumerable<(string, decimal)>> AllowanceTestData;
 
     protected override async Task OnInitializedAsync()
     {
-        completedChores = await _choreDb.GetCompletedChores();
+        completedChores = await _choreDb.GetCompletedChoresByMonth();
         users = await _userDb.GetUsers();
-
     }
 
-    protected override void OnInitialized()
+    private string GetMonthName(int month)
     {
-        CompletedChoreData = new Dictionary<string, IEnumerable<(string, int)>>
-            {
-                ["July"] = new List<(string, int)>
-            {
-                ("test", 75),
-                ("test2", 91)
-            },
-                ["August"] = new List<(string, int)>
-            {
-                ("test", 82),
-                ("test2", 88)
-            },
-                ["September"] = new List<(string, int)>
-            {
-                ("test", 37),
-                ("test2", 29)
-            },
-            };
-
-        AllowanceData = new Dictionary<string, IEnumerable<(string, decimal)>>
-            {
-                ["July"] = new List<(string, decimal)>
-            {
-                ("test", 26.50M),
-                ("test2", 22.00M)
-            },
-                ["August"] = new List<(string, decimal)>
-            {
-                ("test", 27.00M),
-                ("test2", 20.30M)
-            },
-                ["September"] = new List<(string, decimal)>
-            {
-                ("test", 13.00M),
-                ("test2", 11.75M)
-            },
-            };
-
+        DateTime monthName = new DateTime(2000, month, 1);
+        return monthName.ToString("MMMM");
     }
+
+    #region Test Chart Data
+    //protected override void OnInitialized()
+    //{
+    //    CompletedChoreTestData = new Dictionary<string, IEnumerable<(string, int)>>
+    //        {
+    //            ["July"] = new List<(string, int)>
+    //        {
+    //            ("test", 75),
+    //            ("test2", 91)
+    //        },
+    //            ["August"] = new List<(string, int)>
+    //        {
+    //            ("test", 82),
+    //            ("test2", 88)
+    //        },
+    //            ["September"] = new List<(string, int)>
+    //        {
+    //            ("test", 37),
+    //            ("test2", 29)
+    //        },
+    //        };
+
+    //    AllowanceData = new Dictionary<string, IEnumerable<(string, decimal)>>
+    //        {
+    //            ["July"] = new List<(string, decimal)>
+    //        {
+    //            ("test", 26.50M),
+    //            ("test2", 22.00M)
+    //        },
+    //            ["August"] = new List<(string, decimal)>
+    //        {
+    //            ("test", 27.00M),
+    //            ("test2", 20.30M)
+    //        },
+    //            ["September"] = new List<(string, decimal)>
+    //        {
+    //            ("test", 13.00M),
+    //            ("test2", 11.75M)
+    //        },
+    //        };
+
+    //}
+    #endregion
+
+    private Dictionary<string, List<CompletedChoreCount>> ChoresByMonthAndUser()
+    {
+        var choresByMonth = new Dictionary<string, List<CompletedChoreCount>>();
+
+        foreach (var chore in completedChores)
+        {
+            string currentMonth = GetMonthName(chore.Month);
+            var tempUser = new CompletedChoreCount();
+            tempUser.UserName = chore.UserName;
+            tempUser.CompletedChores = chore.ChoreCount;
+
+            if(!choresByMonth.ContainsKey(currentMonth))
+            {
+                choresByMonth.Add(currentMonth, new List<CompletedChoreCount>());
+            }
+            choresByMonth[currentMonth].Add(tempUser);
+        }
+
+        return choresByMonth;
+    }
+
+    private Dictionary<string, List<AllowanceEarned>> AllowanceByMonthAndUser()
+    {
+        var choresByMonth = new Dictionary<string, List<AllowanceEarned>>();
+
+        foreach (var chore in completedChores)
+        {
+            string currentMonth = GetMonthName(chore.Month);
+            var tempUser = new AllowanceEarned();
+            tempUser.UserName = chore.UserName;
+            tempUser.TotalAllowance = chore.MoneyEarned;
+
+            if (!choresByMonth.ContainsKey(currentMonth))
+            {
+                choresByMonth.Add(currentMonth, new List<AllowanceEarned>());
+            }
+            choresByMonth[currentMonth].Add(tempUser);
+        }
+
+        return choresByMonth;
+    }
+
 
 }

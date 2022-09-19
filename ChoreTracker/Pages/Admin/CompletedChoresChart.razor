@@ -1,4 +1,5 @@
-﻿<style>
+﻿@using Models
+<style>
     div {
         transition: all 1s linear;
     }
@@ -25,7 +26,7 @@
 <div class="alert alert-dark col-8">
     <div class="alert alert-primary mb-4 border-dark">
         <div class="row">
-            <h2 class="mb-0">@Title</h2>
+            <h4 class="mb-0">@Title</h4>
             <select class="form-control border-dark" @bind="selectedMonth" @bind:event="oninput">
                 @foreach (var item in Data.Keys.Reverse())
                 {
@@ -37,8 +38,8 @@
     <div>
         @foreach (var item in Data.Where(s => s.Key == selectedMonth).SelectMany(s => s.Value))
         {
-            <div class="alert alert-primary p-1 border-dark" style="width: @(item.Item2)%;">
-                <b>@($"{item.Item1}: ")</b> @($"{item.Item2}")
+            <div class="alert alert-primary p-1 border-dark" style="width: @(item.CompletedChores)%;">
+                <b>@($"{item.UserName}: ")</b> @($"{item.CompletedChores}")
             </div>
 
 
@@ -58,7 +59,7 @@
     [Parameter]
     public string Title { get; set; }
     [Parameter]
-    public Dictionary<string, IEnumerable<(string, int)>> Data { get; set; }
+    public Dictionary<string, List<CompletedChoreCount>> Data { get; set; }
     private string _selectedMonth;
 
     public string selectedMonth

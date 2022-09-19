@@ -1,4 +1,5 @@
-﻿<style>
+﻿@using Models
+<style>
     div {
         transition: all 1s linear;
     }
@@ -25,7 +26,7 @@
 <div class="alert alert-dark col-4">
     <div class="alert alert-primary mb-4 border-dark">
         <div class="row">
-            <h2 class="mb-0">@Title</h2>
+            <h4 class="mb-0">@Title</h4>
             <select class="form-control border-dark" @bind="selectedMonth" @bind:event="oninput">
                 @foreach (var item in Data.Keys.Reverse())
                 {
@@ -37,14 +38,14 @@
     <div>
         @foreach (var item in Data.Where(s => s.Key == selectedMonth).SelectMany(s => s.Value))
         {
-            <div class="alert alert-primary p-1 border-dark" style="width: @(item.Item2 * 3.3M)%;">
-                <b>@($"{item.Item1}: ")</b> @($"{item.Item2:C2}")
+            <div class="alert alert-primary p-1 border-dark" style="width: @(item.TotalAllowance * 1.66M)%;">
+                <b>@($"{item.UserName}: ")</b> @($"{item.TotalAllowance:C2}")
             </div>
 
 
         }
         <div class="legend">
-            @for (int i = 1; i <= 3; i++)
+            @for (int i = 1; i <= 6; i++)
             {
                 <section>
                     <span>@(i * 10)</span>
@@ -58,7 +59,7 @@
     [Parameter]
     public string Title { get; set; }
     [Parameter]
-    public Dictionary<string, IEnumerable<(string, decimal)>> Data { get; set; }
+    public Dictionary<string, List<AllowanceEarned>> Data { get; set; }
     private string _selectedMonth;
 
     public string selectedMonth

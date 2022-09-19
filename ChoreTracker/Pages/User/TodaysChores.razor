@@ -8,6 +8,7 @@
 @inject IChoreData _choreDb
 
 @attribute [Authorize(Roles = "User")]
+
 <h3>Current Chores for @CurrentUserName</h3>
 
 @if (todaysChores == null)
@@ -16,53 +17,61 @@
 }
 else
 {
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>Chore</th>
-                <th>Complete?</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var chore in todaysChores)
-            {
+    if (!DoneForToday)
+    {
+        <img src="/Images/goodjob.png" alt="Done for today"/>
+    }
+    else
+    {
+        <table class="table table-striped">
+            <thead>
                 <tr>
-                    <td>@chore.ChoreName</td>
-                    <td>
-                        @if (chore.IsComplete)
-                        {
-                            <button disabled type="submit" @onclick="() => MarkChoreComplete(chore.ChoreId)" class="btn btn-outline-primary">Yes</button>
-                            <button type="submit" @onclick="() => MarkChoreInComplete(chore.ChoreId)" class="btn btn-danger">No</button>
-                        }
-                        else
-                        {
-                            <button type="submit" @onclick="() => MarkChoreComplete(chore.ChoreId)" class="btn btn-primary">Yes</button>
-                            <button disabled type="submit" @onclick="() => MarkChoreInComplete(chore.ChoreId)" class="btn btn-outline-primary">No</button>
-                        }
-                    </td>
+                    <th>Chore</th>
+                    <th>Complete?</th>
                 </tr>
-            }
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                @foreach (var chore in todaysChores)
+                {
+                    <tr>
+                        <td>@chore.ChoreName</td>
+                        <td>
+                            @if (chore.IsComplete)
+                            {
+                                <button disabled type="submit" @onclick="() => MarkChoreComplete(chore.Id)" class="btn btn-outline-primary">Yes</button>
+                                <button type="submit" @onclick="() => MarkChoreInComplete(chore.Id)" class="btn btn-danger">No</button>
+                            }
+                            else
+                            {
+                                <button type="submit" @onclick="() => MarkChoreComplete(chore.Id)" class="btn btn-primary">Yes</button>
+                                <button disabled type="submit" @onclick="() => MarkChoreInComplete(chore.Id)" class="btn btn-outline-primary">No</button>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        <br />
+        <hr />
+        <br />
+        <h4>Done for the day?</h4>
+        <button type="submit" @onclick="AddCompletedChores" class="btn btn-primary">Submit Completed Chores</button>
+    }
+
 }
 
-<br />
-<hr />
-<br />
 
-<h4>Done for the day?</h4>
-<button type="submit" @onclick="AddCompletedChores" class="btn btn-primary">Submit Completed Chores</button>
 
 @code {
-    private List<AssignedChore>? assignedChores;
     private List<AssignedChoreView>? todaysChores;
-    public string? CurrentUserName;
+    public string CurrentUserName;
+    public bool DoneForToday;
 
     protected override async Task OnInitializedAsync()
     {
         CurrentUserName = httpContextAccessor.HttpContext.User.Identity.Name;
-        assignedChores = await _choreDb.GetAssignedChores();
         todaysChores = await _choreDb.GetTodaysChores(CurrentUserName.ToString());
+        DoneForToday = await _choreDb.CheckIfDoneForDay(CurrentUserName);
     }
 
     private async Task MarkChoreComplete(int choreId)
@@ -83,13 +92,13 @@ else
     {
         List<CompletedChore> completedChores = new List<CompletedChore>();
 
-        if (assignedChores != null)
+        if (todaysChores != null)
         {
-            foreach (AssignedChore chore in assignedChores)
+            foreach (var chore in todaysChores)
             {
                 CompletedChore completedChore = new CompletedChore
                 {
-                    ChoreId = chore.Id,
+                    ChoreId = chore.ChoreId,
                     UserName = CurrentUserName,
                     IsComplete = chore.IsComplete,
                     DateComplete = DateTime.Today
